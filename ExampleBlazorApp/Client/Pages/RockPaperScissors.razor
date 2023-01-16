@@ -1,0 +1,51 @@
+﻿@page "/rps"
+@using ExampleBlazorApp.Shared;
+@using System.Text.Json;
+@using System.Net.Http
+@inject HttpClient Http
+
+<h3>RPS</h3>
+
+<div>
+    <p>Game outcome:</p>
+    @if (string.IsNullOrWhiteSpace(gameModel.GameResult))
+    {
+        <p><em>Awaiting player input...</em></p>
+    }
+    else
+    {
+        <p id="result"><em>@gameModel.GameResult</em></p>
+    }
+</div>
+<div>
+    <p>Make your choice:</p>
+    <EditForm Model="@playerModel" OnValidSubmit="SendUserChoice" id="submit-choice-form">
+        <div>
+            <input id="player-input" class="@(gameModel.ErrorMessage is null ? "alert alert-info" : "alert alert-danger")" type="text" maxlength="10" width="10" required @bind="playerModel.PlayerChoice" />
+        </div>
+        <div>
+            <button id="submit-input-btn" class="btn @(gameModel.ErrorMessage is null ? "btn-primary" : "btn-danger")" type="submit">Play RPS</button>
+        </div>
+    </EditForm>
+</div>
+<div>
+    @if (string.IsNullOrWhiteSpace(gameModel.ComputerChoice.ToString()))
+    {
+        <p><em>Computer has not made a decision yet</em></p>
+    }
+    else
+    {
+        <p id="computer-choice"><em>Computer Picks: @gameModel.ComputerChoice</em></p>
+    }
+</div>
+
+@code {
+    private Player playerModel = new Player();
+    private Game gameModel = new Game();
+
+    private async Task SendUserChoice()
+    {
+        ViewModel _Model = new(Http);
+        gameModel = await _Model.Play(playerModel, gameModel).ConfigureAwait(false);
+    }
+}
