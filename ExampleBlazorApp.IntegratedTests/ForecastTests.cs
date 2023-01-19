@@ -10,30 +10,34 @@ public class ForecastTests
     [Fact]
     public async Task PageLoad()
     {
+        // FOR CONF:
         using IPlaywright pw = await Playwright.CreateAsync();
-        IBrowser chrome = await pw.Chromium.LaunchAsync();
+        IBrowser chrome = await pw.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = false });
         IBrowserContext context = await chrome.NewContextAsync();
         IPage page = await context.NewPageAsync();
-        await page.GotoAsync("https://localhost:7257");
-        await page.GetByTestId(ForecastButton).ClickAsync();
-        bool isTableEnabled = await page.GetByTestId(ForecastTable).IsEnabledAsync();
-        Assert.True(isTableEnabled, "Forecast table never became enabled after attempting to navigate to the page.");
-        
-        // FOR CONF:
+        await page.GotoAsync("https://localhost:7062/");
+        await page.GetByTestId(RockPaperScissorsNavButton).ClickAsync();
+        await page.GetByTestId(PlayerInput).FillAsync("rock");
         await page.RunAndWaitForResponseAsync(async () =>
         {
             await page.GetByTestId(SubmitPlayerChoiceButton).ClickAsync();
         }, response => response.Url.Contains("/api/rockpaperscissors/play"));
 
         string? text = await page.GetByTestId(GameResultLabel).TextContentAsync();
+        Assert.NotNull(text);
+        Assert.NotEqual("Awaiting player input...", text);
     }
 
     [Fact]
     public async void FetchData()
     {
+        // FOR CONF:
         using IPlaywright pw = await Playwright.CreateAsync();
         IAPIRequestContext context = await pw.APIRequest.NewContextAsync();
-        IAPIResponse response = await context.GetAsync("https://localhost:7257/WeatherForecast");
+        IAPIResponse response = await context.PostAsync("https://localhost:7062/api/rockpaperscissors/validate/rock", new APIRequestContextOptions { IgnoreHTTPSErrors = true });
         Assert.Equal(200, response.Status);
+        ValidateResponse? deserializedResponse = System.Text.Json.JsonSerializer.Deserialize<ValidateResponse>(await response.TextAsync());
+        Assert.NotNull(deserializedResponse);
+        Assert.True(deserializedResponse.isPlayerSelectionValid);
     }
 }
