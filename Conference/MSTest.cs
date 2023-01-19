@@ -22,6 +22,17 @@ public class RockPaperScissorsTests : PageTest
         await Expect(Page.GetByTestId(ComputerChoiceLabel)).ToBeVisibleAsync();
         await Expect(Page.GetByTestId(ComputerChoiceLabel)).ToContainTextAsync("Computer Picks");
         await Expect(Page.GetByTestId(GameResultLabel)).Not.ToContainTextAsync("Awaiting player input...");
+        /* To run headless add a .runsettings with:
+        <?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <Playwright>
+    <BrowserName>chromium</BrowserName>
+    <LaunchOptions>
+      <Headless>false</Headless>
+      <Channel>msedge</Channel>
+    </LaunchOptions>
+  </Playwright>
+</RunSettings>*/
     }
 }
 
