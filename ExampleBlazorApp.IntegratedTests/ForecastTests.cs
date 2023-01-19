@@ -18,6 +18,14 @@ public class ForecastTests
         await page.GetByTestId(ForecastButton).ClickAsync();
         bool isTableEnabled = await page.GetByTestId(ForecastTable).IsEnabledAsync();
         Assert.True(isTableEnabled, "Forecast table never became enabled after attempting to navigate to the page.");
+        
+        // FOR CONF:
+        await page.RunAndWaitForResponseAsync(async () =>
+        {
+            await page.GetByTestId(SubmitPlayerChoiceButton).ClickAsync();
+        }, response => response.Url.Contains("/api/rockpaperscissors/play"));
+
+        string? text = await page.GetByTestId(GameResultLabel).TextContentAsync();
     }
 
     [Fact]
